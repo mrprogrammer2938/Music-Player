@@ -1,17 +1,16 @@
-# Translate
+# Music Player
 
-This Programm write by [Mr.nope](https://github.com/mrprogrammer2938)
-
+This Code write by [Mr.nope](https://github.com/mrprogrammer2938)
 
 **Installing**
 ```
-git clone https://github.com/mrprogrammer2938/Translate
+git clone https://githun.com/mrprogrammer2938/Music-Player
 
-cd Translate
+cd Music-Player
 
 bash install.sh
 
-python3 run.py
+python3 sound.py
 ```
 
 
