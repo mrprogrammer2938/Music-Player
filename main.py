@@ -4,81 +4,90 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.uic import loadUi
+from form import Ui_MainWindow
+import qdarktheme
 import pygame
-import sys
+import sys,os
 pygame.init()
-width = 401
-height = 371
-class Window(QMainWindow):
+
+class Window(QMainWindow,Ui_MainWindow):
     def __init__(self):
         super(Window,self).__init__()
-        loadUi("./Form/form.ui",self)
-        
+        self.n = 0
+        self.setupUi(self)
+        qdarktheme.setup_theme("light")
         self.setWindowTitle("Music Player")
-        self.setGeometry(500,200,width,height)
-        self.setFixedSize(width,height)
+        self.setWindowIcon(QIcon("icon.jpg"))
+        self.setFixedSize(821,535)
+        
+        self.sound_slider.setMinimum(0)
+        self.sound_slider.setMaximum(100)
+        self.sound_slider.setValue(30)
+        
+        self.sound_slider.valueChanged.connect(self.set_sound)
+        self.mylist.itemClicked.connect(self.set_file)
         
         self.play_btn.clicked.connect(self.play)
         self.pause_btn.clicked.connect(self.pause)
         self.stop_btn.clicked.connect(self.stop)
-        self.openfile_action.triggered.connect(self.open_file)
+        self.select_folder.triggered.connect(self.open_folder)
         self.exit_action.triggered.connect(self.close)
-        self.about_action.triggered.connect(self.about)
         
         self.short_key()
         
-        self.setstatus = QStatusBar()
-        self.setstatus.showMessage("Music Player v1.0")
-        self.setStatusBar(self.setstatus)
-    def open_file(self):
+        self.set_status()
+
+    def open_folder(self):
         try:
-            file = QFileDialog().getOpenFileName(self,caption="Open File",filter="Mp3 File (*.mp3)")
-            self.file_name = file[0]
-            self.music_label.setText(self.file_name)
-            pygame.mixer.music.load(self.file_name)
-            
-        except (Exception,):
-            pass
+            self.folder = QFileDialog().getExistingDirectory(self,"Select Music Folder","C:\\")
+            self.mylist.clear()
+            lists = os.listdir(self.folder)
+            for item in lists:
+                if item[-4::] == ".mp3":
+                    self.mylist.addItem(item)
+                else:
+                    pass     
+            self.label_path.setText(f"Folder: {self.folder}")
+        except:
+            return
+
+    def set_file(self,item):
+        try:
+            item_text = item.text()
+            pygame.mixer.music.load(f"{self.folder}/{item_text}")
+        except Exception as err:
+            print(err)
+    def set_sound(self):
+        value = float(self.sound_slider.value())
+        pygame.mixer.music.set_volume(value)
+    def change_sound(self):
+        try:
+            value = self.hslider.value()
+            pygame.mixer.music.set_pos(value)
+        except:
+            return
     def play(self):
         pygame.mixer.music.play()
     def pause(self):
         pygame.mixer.music.pause()
     def stop(self):
         pygame.mixer.music.stop()
-    def about(self):
-        text = """Developer: Sina Meysami
-Version: v1.0
-Github: https://github.com/mrprogrammer2938
-Instagram: https://instagram.com/sina.coder
-Twitter: https://twitter.com/Sinameysami
-"""
-        width = 401
-        height = 371
-        dlg = QDialog()
-        dlg.setWindowTitle("Music-Player/About")
-        dlg.setGeometry(920,200,width,height)
-        dlg.setFixedSize(width,height)
-        textbox = QTextEdit(dlg)
-        textbox.setText(text)
-        textbox.setFont(QFont("Arial",20))
-        textbox.setReadOnly(True)
-        textbox.setStyleSheet("background-color: white;color: black;")
-        textbox.resize(401,371)
-        rev = dlg.exec_()
     def short_key(self):
         exit_key = QShortcut(QKeySequence("Ctrl+Q"), self)
         exit_key.activated.connect(self.close)
         exit_key2 = QShortcut(QKeySequence("Ctrl+E"), self)
         exit_key2.activated.connect(self.close)
-        open_file = QShortcut(QKeySequence("Ctrl+O"),self)
-        open_file.activated.connect(self.open_file)
-        
+        open_folder = QShortcut(QKeySequence("Ctrl+O"),self)
+        open_folder.activated.connect(self.open_folder)
+    def set_status(self):
+        status = QStatusBar(self)
+        status.showMessage("Music Player v1.0")
+        self.setStatusBar(status)   
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Music Player")
-    app.setApplicationDisplayName("Music Player")
-    app.setApplicationVersion("v1.0")
+    app.setApplicationDisplayName("Sina Meysami")
+    app.setApplicationVersion("v1")
     window = Window()
     window.show()
     sys.exit(app.exec_())
